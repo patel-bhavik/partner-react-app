@@ -1,0 +1,6 @@
+{
+  "manifest_version": 3,
+  "name": "PG Prophet",
+  "version": "1.0",
+  "description": "A calendar that shows upcoming/past Prime Gaming drops."
+}
