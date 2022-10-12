@@ -8,6 +8,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.util.List;
@@ -64,25 +65,25 @@ public class GetPrimeGamingOffersLambda {
         return true;
     }
 
-    private boolean applyFilter(PrimeOffer offer, PrimeGamingOfferFilter filter) {
+    private static boolean applyFilter(PrimeOffer offer, PrimeGamingOfferFilter filter) {
         String filterGameTitle = filter.getGameTitle();
         String filterPublisher = filter.getPublisher();
         String filterStartDate = filter.getStartDate();
         String filterEndDate = filter.getEndDate();
 
-        if (Objects.nonNull(filterGameTitle) && !filterGameTitle.equals(offer.getRelatedGameTitle())) {
+        if (StringUtils.isNotBlank(filterGameTitle) && !filterGameTitle.equals(offer.getRelatedGameTitle())) {
             return false;
         }
 
-        if (Objects.nonNull(filterPublisher) && !filterPublisher.equals(offer.getContent().getPublisher())) {
+        if (StringUtils.isNotBlank(filterPublisher) && !filterPublisher.equals(offer.getContent().getPublisher())) {
             return false;
         }
 
-        if (Objects.nonNull(filterStartDate) && Instant.parse(offer.getStartTime()).isBefore(Instant.parse(filterStartDate))) {
+        if (StringUtils.isNotBlank(filterStartDate) && Instant.parse(offer.getStartTime()).isBefore(Instant.parse(filterStartDate))) {
             return false;
         }
 
-        if (Objects.nonNull(filterEndDate) && Instant.parse(offer.getStartTime()).isAfter(Instant.parse(filterEndDate))) {
+        if (StringUtils.isNotBlank(filterEndDate) && Instant.parse(offer.getStartTime()).isAfter(Instant.parse(filterEndDate))) {
             return false;
         }
 
