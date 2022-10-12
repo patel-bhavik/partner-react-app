@@ -43,7 +43,9 @@ public class GraphQLClient {
             return Collections.emptyList();
         }
         try {
+            System.out.println("Start Parsing GraphQL Response");
             graphQLResponse = objectMapper.readValue(actualResponse, GraphQLResponse.class);
+            System.out.println("End Parsing GraphQL Response");
         } catch (JsonProcessingException e) {
             System.out.println("Error occurred while parsing JSON string.");
             System.out.println(actualResponse);
@@ -56,7 +58,8 @@ public class GraphQLClient {
         StringEntity requestEntity = new StringEntity(GET_PRIME_OFFERS_QUERY, ContentType.APPLICATION_JSON);
         HttpPost request = new HttpPost(ENDPOINT);
         request.setEntity(requestEntity);
-        request.setHeader("csrf-token", fetchCSRFToken());
+        request.setHeader("csrf-token", "gnLLdRSfgTOJSXi/vqto7q+bcxiNYZ0ot8RHLuUAAAACAAAAAGNHTHhyYXcAAAAA+8jokd9rqj+wHxPcX6iU"); //hardcoded for now
+
         return executeRequest(request);
     }
 
@@ -69,7 +72,9 @@ public class GraphQLClient {
     private static String executeRequest(HttpUriRequest request) {
         HttpResponse response;
         try {
+            System.out.println("Start Executing HTTP request");
             response = CLIENT.execute(request);
+            System.out.println("End Executing HTTP request");
         } catch (IOException e) {
             System.out.println("Error occurred while executing HTTP request.");
             response = new BasicHttpResponse((ProtocolVersion)HttpVersion.HTTP_1_1, HttpStatus.SC_BAD_REQUEST, "");
@@ -77,7 +82,9 @@ public class GraphQLClient {
 
         String actualResponse = null;
         try {
+            System.out.println("Start converting HTTP Response to String");
             actualResponse = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8.name());
+            System.out.println("End converting HTTP Response to String");
         } catch (IOException e) {
             System.out.println("Error occurred while converting the response to string.");
         }
@@ -85,8 +92,10 @@ public class GraphQLClient {
     }
 
     private static String parseHtmlResponseForCSRFToken(String html) {
+        System.out.println("*** Start parseHtmlResponseForCSRFToken");
         Document htmlDoc = Jsoup.parse(html);
         Element csrfInputElement = htmlDoc.select("input[name=csrf-key]").first();
+        System.out.println("*** End parseHtmlResponseForCSRFToken");
         return csrfInputElement.attr("value");
     }
 }
