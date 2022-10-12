@@ -17,9 +17,11 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.w3c.dom.Entity;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -37,7 +39,9 @@ public class GraphQLClient {
             "}";
 
     public static List<PrimeOffer> getPrimeOffers() {
+        System.out.println("Line 1 of getPrimeOffers.");
         String actualResponse = executeGraphQLQuery();
+        System.out.println("Line 10 of getPrimeOffers.");
         GraphQLResponse graphQLResponse;
         if (Objects.isNull(actualResponse)) {
             return Collections.emptyList();
@@ -55,17 +59,24 @@ public class GraphQLClient {
     }
 
     private static String executeGraphQLQuery() {
+        System.out.println("Line 2 of getPrimeOffers.");
         StringEntity requestEntity = new StringEntity(GET_PRIME_OFFERS_QUERY, ContentType.APPLICATION_JSON);
+        System.out.println("Line 3 of getPrimeOffers.");
         HttpPost request = new HttpPost(ENDPOINT);
+        System.out.println("Line 4 of getPrimeOffers.");
         request.setEntity(requestEntity);
-        request.setHeader("csrf-token", "gnLLdRSfgTOJSXi/vqto7q+bcxiNYZ0ot8RHLuUAAAACAAAAAGNHTHhyYXcAAAAA+8jokd9rqj+wHxPcX6iU"); //hardcoded for now
-
+        System.out.println("Line 5 of getPrimeOffers.");
+        request.setHeader("csrf-token", fetchCSRFToken()); //hardcoded for now
+        System.out.println("Line 9 of getPrimeOffers.");
         return executeRequest(request);
     }
 
     private static String fetchCSRFToken() {
+        System.out.println("Line 6 of getPrimeOffers.");
         HttpGet request = new HttpGet("https://gaming.amazon.com/home");
+        System.out.println("Line 7 of getPrimeOffers.");
         String response = executeRequest(request);
+        System.out.println("Line 8 of getPrimeOffers.");
         return parseHtmlResponseForCSRFToken(response);
     }
 
@@ -84,6 +95,7 @@ public class GraphQLClient {
         try {
             System.out.println("Start converting HTTP Response to String");
             actualResponse = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8.name());
+            EntityUtils.consume(response.getEntity());
             System.out.println("End converting HTTP Response to String");
         } catch (IOException e) {
             System.out.println("Error occurred while converting the response to string.");
