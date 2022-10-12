@@ -12,10 +12,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.Map;
+import java.util.AbstractMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class GetPrimeGamingOffersLambda {
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final static Map<String, String> CORS = Stream
+    .of(new AbstractMap.SimpleEntry<String, String>("Access-Control-Allow-Origin", "*"))
+    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     public APIGatewayProxyResponseEvent getPrimeGamingOffers(APIGatewayProxyRequestEvent request) {
         final PrimeGamingOfferFilter filter;
@@ -24,7 +30,7 @@ public class GetPrimeGamingOffersLambda {
         } catch (JsonProcessingException e) {
             String error = "JSON parsing failed. Invalid JSON request.";
             System.out.println(error);
-            return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody(error);
+            return new APIGatewayProxyResponseEvent().withHeaders(CORS).withStatusCode(400).withBody(error);
         }
 
         if (validateRequest(filter)) {
@@ -34,16 +40,16 @@ public class GetPrimeGamingOffersLambda {
                     .collect(Collectors.toList());
             try {
                 String output = objectMapper.writeValueAsString(new PrimeGamingOffers(eligiblePrimeOffers));
-                return new APIGatewayProxyResponseEvent().withStatusCode(200).withBody(output);
+                return new APIGatewayProxyResponseEvent().withHeaders(CORS).withStatusCode(200).withBody(output);
             } catch (JsonProcessingException e) {
                 String error = "JSON parsing failed. JSON output creation failed.";
                 System.out.println(error);
-                return new APIGatewayProxyResponseEvent().withStatusCode(500).withBody(error);
+                return new APIGatewayProxyResponseEvent().withHeaders(CORS).withStatusCode(500).withBody(error);
             }
 
         } else {
             String error = "Invalid request. If you specify both start and end date then start date has to be earlier than end date.";
-            return new APIGatewayProxyResponseEvent().withStatusCode(400).withBody(error);
+            return new APIGatewayProxyResponseEvent().withHeaders(CORS).withStatusCode(400).withBody(error);
         }
     }
 
