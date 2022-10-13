@@ -39,75 +39,59 @@ public class GraphQLClient {
             "}";
 
     public static List<PrimeOffer> getPrimeOffers() {
-        System.out.println("Line 1 of getPrimeOffers.");
         String actualResponse = executeGraphQLQuery();
-        System.out.println("Line 10 of getPrimeOffers.");
         GraphQLResponse graphQLResponse;
         if (Objects.isNull(actualResponse)) {
             return Collections.emptyList();
         }
         try {
-            System.out.println("Start Parsing GraphQL Response");
             graphQLResponse = objectMapper.readValue(actualResponse, GraphQLResponse.class);
-            System.out.println("End Parsing GraphQL Response");
         } catch (JsonProcessingException e) {
             System.out.println("Error occurred while parsing JSON string.");
-            System.out.println(actualResponse);
+            e.printStackTrace();
             return Collections.emptyList();
         }
         return graphQLResponse.getData().getPrimeOffers();
     }
 
     private static String executeGraphQLQuery() {
-        System.out.println("Line 2 of getPrimeOffers.");
         StringEntity requestEntity = new StringEntity(GET_PRIME_OFFERS_QUERY, ContentType.APPLICATION_JSON);
-        System.out.println("Line 3 of getPrimeOffers.");
         HttpPost request = new HttpPost(ENDPOINT);
-        System.out.println("Line 4 of getPrimeOffers.");
         request.setEntity(requestEntity);
-        System.out.println("Line 5 of getPrimeOffers.");
-        request.setHeader("csrf-token", fetchCSRFToken()); //hardcoded for now
-        System.out.println("Line 9 of getPrimeOffers.");
+        request.setHeader("csrf-token", fetchCSRFToken());
         return executeRequest(request);
     }
 
     private static String fetchCSRFToken() {
-        System.out.println("Line 6 of getPrimeOffers.");
         HttpGet request = new HttpGet("https://gaming.amazon.com/home");
-        System.out.println("Line 7 of getPrimeOffers.");
         String response = executeRequest(request);
-        System.out.println("Line 8 of getPrimeOffers.");
         return parseHtmlResponseForCSRFToken(response);
     }
 
     private static String executeRequest(HttpUriRequest request) {
         HttpResponse response;
         try {
-            System.out.println("Start Executing HTTP request");
             response = CLIENT.execute(request);
-            System.out.println("End Executing HTTP request");
         } catch (IOException e) {
             System.out.println("Error occurred while executing HTTP request.");
+            e.printStackTrace();
             response = new BasicHttpResponse((ProtocolVersion)HttpVersion.HTTP_1_1, HttpStatus.SC_BAD_REQUEST, "");
         }
 
         String actualResponse = null;
         try {
-            System.out.println("Start converting HTTP Response to String");
             actualResponse = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8.name());
             EntityUtils.consume(response.getEntity());
-            System.out.println("End converting HTTP Response to String");
         } catch (IOException e) {
+            e.printStackTrace();
             System.out.println("Error occurred while converting the response to string.");
         }
         return actualResponse;
     }
 
     private static String parseHtmlResponseForCSRFToken(String html) {
-        System.out.println("*** Start parseHtmlResponseForCSRFToken");
         Document htmlDoc = Jsoup.parse(html);
         Element csrfInputElement = htmlDoc.select("input[name=csrf-key]").first();
-        System.out.println("*** End parseHtmlResponseForCSRFToken");
         return csrfInputElement.attr("value");
     }
 }

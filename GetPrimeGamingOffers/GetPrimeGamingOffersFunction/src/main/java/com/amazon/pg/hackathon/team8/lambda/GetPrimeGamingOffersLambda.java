@@ -12,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 import java.util.Map;
 import java.util.AbstractMap;
 import java.util.stream.Collectors;
@@ -27,30 +26,24 @@ public class GetPrimeGamingOffersLambda {
     public APIGatewayProxyResponseEvent getPrimeGamingOffers(APIGatewayProxyRequestEvent request) {
         final PrimeGamingOfferFilter filter;
         try {
-            System.out.println("Start Lambda Execution");
             filter = objectMapper.readValue(request.getBody(), PrimeGamingOfferFilter.class);
         } catch (JsonProcessingException e) {
             String error = "JSON parsing failed. Invalid JSON request.";
-            System.out.println(error);
+            e.printStackTrace();
             return new APIGatewayProxyResponseEvent().withHeaders(CORS).withStatusCode(400).withBody(error);
         }
 
         if (validateRequest(filter)) {
-            System.out.println("Start GraphQLClient.getPrimeOffers()");
             List<PrimeOffer> primeOffers = GraphQLClient.getPrimeOffers();
-            System.out.println("End GraphQLClient.getPrimeOffers()");
             List<PrimeOffer> eligiblePrimeOffers = primeOffers.stream()
                     .filter(primeOffer -> applyFilter(primeOffer, filter))
                     .collect(Collectors.toList());
-                    System.out.println("End of Collection Filtering");
             try {
-                System.out.println("Start create API Gateway Response Event");
                 String output = objectMapper.writeValueAsString(new PrimeGamingOffers(eligiblePrimeOffers));
-                System.out.println("End create API Gateway Response Event");
                 return new APIGatewayProxyResponseEvent().withHeaders(CORS).withStatusCode(200).withBody(output);
             } catch (JsonProcessingException e) {
                 String error = "JSON parsing failed. JSON output creation failed.";
-                System.out.println(error);
+                e.printStackTrace();
                 return new APIGatewayProxyResponseEvent().withHeaders(CORS).withStatusCode(500).withBody(error);
             }
 
